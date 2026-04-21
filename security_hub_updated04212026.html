@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{background:#f4f4f4;min-height:100vh;font-size:13px}
+.topnav{background:#1e2a3b;height:44px;display:flex;align-items:center;padding:0 12px;gap:4px;color:#c8d0dc;font-size:13px;position:fixed;top:0;left:0;right:0;z-index:100}
+.topnav .logo{display:flex;align-items:center;gap:8px;color:#fff;font-weight:600;font-size:14px;margin-right:12px}
+.nav-item{padding:4px 10px;border-radius:4px;cursor:pointer;color:#c8d0dc;font-size:13px;display:flex;align-items:center;gap:4px}
+.nav-item:hover,.nav-item.active{background:#2d3f55;color:#fff}
+.nav-arrow{font-size:9px;opacity:.7}
+.topnav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.avatar{width:28px;height:28px;border-radius:50%;background:#4a7fcb;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600}
+.topnav-icon{color:#c8d0dc;font-size:16px;cursor:pointer;padding:4px}
+.sidebar{width:40px;background:#fff;border-right:0.5px solid #e0e0e0;position:fixed;left:0;top:44px;bottom:0;display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:8px;z-index:90}
+.sidebar-icon{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280}
+.sidebar-icon:hover{background:#f3f4f6}
+.sidebar-icon.active{background:#e8f0fd;color:#2563eb}
+.main{margin-left:40px;margin-top:44px}
+.page-header{background:#fff;border-bottom:0.5px solid #e0e0e0;padding:18px 24px 0;position:sticky;top:44px;z-index:80}
+.header-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.shield-icon{width:36px;height:36px;background:#e8f0fd;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.page-title{font-size:20px;font-weight:600;color:#111}
+.page-sub{font-size:13px;color:#6b7280;margin-top:1px}
+.tabs{display:flex}
+.tab{padding:10px 16px;font-size:13px;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tab:hover{color:#374151}
+.tab.active{color:#2563eb;border-bottom:2px solid #2563eb;font-weight:500}
+.content{padding:20px 24px;min-height:calc(100vh - 160px)}
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.search-wrap{position:relative}
+.search-wrap input{padding:6px 10px 6px 30px;border:0.5px solid #d1d5db;border-radius:6px;font-size:13px;width:180px;background:#fff;color:#111;outline:none}
+.search-wrap input:focus{border-color:#2563eb}
+.search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:13px}
+.count-badge{background:#2563eb;color:#fff;border-radius:5px;padding:2px 8px;font-size:12px;font-weight:600;flex-shrink:0}
+.toolbar-label{font-size:14px;color:#374151;font-weight:500}
+.ml-auto{margin-left:auto}
+.btn-primary{background:#2563eb;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.btn-primary:hover{background:#1d4ed8}
+.btn-more{background:#fff;border:0.5px solid #d1d5db;border-radius:6px;padding:6px 10px;cursor:pointer;color:#374151;font-size:16px}
+.btn-more:hover{background:#f3f4f6}
+.filter-select{border:0.5px solid #d1d5db;border-radius:6px;padding:6px 10px;font-size:13px;background:#fff;color:#374151;cursor:pointer;outline:none}
+.table-wrap{background:#fff;border:0.5px solid #e0e0e0;border-radius:8px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{border-bottom:0.5px solid #e5e7eb;background:#fff}
+th{padding:10px 12px;text-align:left;color:#6b7280;font-weight:500;font-size:12px;white-space:nowrap;user-select:none;cursor:pointer}
+th:hover{color:#374151}
+.sort-icon{font-size:10px;opacity:.6;margin-left:2px}
+tbody tr{border-bottom:0.5px solid #f3f4f6}
+tbody tr:hover{background:#f9fafb;cursor:pointer}
+tbody tr:last-child{border-bottom:none}
+td{padding:10px 12px;color:#374151;vertical-align:top}
+.td-link{color:#2563eb;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px}
+.access-lines{line-height:1.7;color:#374151}
+.no-access{color:#9ca3af}
+.status-pill{display:inline-block;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:500}
+.status-active{background:#d1fae5;color:#065f46}
+.status-inactive{background:#f3f4f6;color:#6b7280}
+.status-locked{background:#fef3c7;color:#92400e}
+.report-type{display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700}
+.type-sql{background:#dbeafe;color:#1d4ed8}
+.type-ysr{background:#fef3c7;color:#92400e}
+.roles-badge{display:inline-flex;align-items:center;justify-content:center;background:#16a34a;color:#fff;border-radius:5px;min-width:28px;height:22px;font-size:12px;font-weight:700;padding:0 7px}
+.cb{width:14px;height:14px;cursor:pointer;accent-color:#2563eb}
+
+/* DRAWER */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.25);z-index:200;display:none}
+.drawer-overlay.open{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:790px;background:#fff;box-shadow:-4px 0 20px rgba(0,0,0,.12);z-index:201;display:flex;flex-direction:column;overflow:hidden;transform:translateX(100%);transition:transform .2s ease}
+.drawer.open{transform:translateX(0)}
+.drawer-header{padding:16px 20px 0;border-bottom:0.5px solid #e5e7eb;flex-shrink:0}
+.drawer-title-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.drawer-avatar-circle{width:36px;height:36px;border-radius:50%;background:#f59e0b;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0}
+.drawer-shield{width:32px;height:32px;background:#e8f0fd;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.drawer-title{font-size:16px;font-weight:600;color:#111}
+.drawer-sub{font-size:12px;color:#6b7280}
+.drawer-close{margin-left:auto;background:none;border:none;font-size:20px;color:#6b7280;cursor:pointer;padding:4px 8px;line-height:1}
+.drawer-close:hover{color:#111}
+.drawer-tabs{display:flex;overflow-x:auto;gap:0}
+.drawer-tabs::-webkit-scrollbar{height:3px}
+.drawer-tabs::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:2px}
+.dtab{padding:8px 14px;font-size:12px;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;flex-shrink:0}
+.dtab:hover{color:#374151}
+.dtab.active{color:#2563eb;border-bottom:2px solid #2563eb;font-weight:500}
+.drawer-body{flex:1;overflow-y:auto;padding:20px}
+.drawer-footer{padding:12px 20px;border-top:0.5px solid #e5e7eb;display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+.btn-cancel{background:#fff;border:0.5px solid #d1d5db;border-radius:6px;padding:7px 16px;font-size:13px;cursor:pointer;color:#374151}
+.btn-cancel:hover{background:#f3f4f6}
+.btn-save{background:#2563eb;color:#fff;border:none;border-radius:6px;padding:7px 18px;font-size:13px;font-weight:500;cursor:pointer}
+.btn-save:hover{background:#1d4ed8}
+
+/* shared drawer helpers */
+.d-label{font-size:11px;color:#6b7280;margin-bottom:4px}
+.d-input{width:100%;border:0.5px solid #d1d5db;border-radius:5px;padding:7px 9px;font-size:13px;color:#111;outline:none;background:#fff}
+.d-input:focus{border-color:#2563eb}
+.d-input.readonly{background:#f9fafb;color:#6b7280}
+.d-textarea{width:100%;border:0.5px solid #d1d5db;border-radius:5px;padding:7px 9px;font-size:13px;color:#111;outline:none;background:#fff;resize:vertical;min-height:60px}
+.d-select{width:100%;border:0.5px solid #d1d5db;border-radius:5px;padding:7px 9px;font-size:13px;color:#374151;outline:none;background:#fff}
+.d-checkbox-row{display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;margin-bottom:8px}
+.d-checkbox-row input{accent-color:#2563eb;width:14px;height:14px}
+.section-title{font-size:13px;font-weight:600;color:#374151;margin-bottom:14px}
+.form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.mb12{margin-bottom:12px}
+.mb16{margin-bottom:16px}
+
+/* sub-tab system inside drawer */
+.sub-tabs{display:flex;gap:0;border-bottom:0.5px solid #e5e7eb;margin-bottom:16px}
+.stab{padding:7px 14px;font-size:12px;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.stab:hover{color:#374151}
+.stab.active{color:#2563eb;border-bottom:2px solid #2563eb;font-weight:500}
+
+/* access/noaccess subtabs */
+.access-subtabs{display:flex;gap:0;margin-bottom:14px}
+.atab{padding:6px 14px;font-size:13px;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px}
+.atab.active{color:#2563eb;border-bottom:2px solid #2563eb;font-weight:500}
+.atab-badge{background:#2563eb;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:600}
+.atab-badge-gray{background:#e5e7eb;color:#374151;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:600}
+
+/* generic table inside drawer */
+.d-table{width:100%;border-collapse:collapse;font-size:13px}
+.d-table th{padding:8px 10px;text-align:left;color:#6b7280;font-weight:500;font-size:12px;border-bottom:0.5px solid #e5e7eb}
+.d-table td{padding:9px 10px;color:#374151;border-bottom:0.5px solid #f3f4f6}
+.d-table tr:last-child td{border-bottom:none}
+
+/* access badges */
+.ab{display:inline-block;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:500}
+.ab-access{background:#d1fae5;color:#065f46}
+.ab-rw{background:#fef3c7;color:#92400e}
+.ab-read{background:#dbeafe;color:#1d4ed8}
+.ab-noaccess{background:#fee2e2;color:#991b1b}
+.default-badge{background:#ef4444;color:#fff;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;margin-left:6px}
+
+/* dual list */
+.dual-wrap{display:grid;grid-template-columns:1fr 52px 1fr;gap:0;align-items:start}
+.dual-col-hdr{font-size:13px;font-weight:600;color:#374151;margin-bottom:8px}
+.dual-sr{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.dual-s{flex:1;border:0.5px solid #d1d5db;border-radius:5px;padding:5px 8px;font-size:12px;outline:none;color:#111}
+.dual-s:focus{border-color:#2563eb}
+.dual-list{border:0.5px solid #d1d5db;border-radius:5px;overflow-y:auto;max-height:260px;background:#fff}
+.dl-hdr{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:0.5px solid #e5e7eb;font-size:12px;font-weight:600;background:#fafafa}
+.dl-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:0.5px solid #f3f4f6;font-size:12px;color:#374151}
+.dl-item:last-child{border-bottom:none}
+.dl-item:hover{background:#f9fafb}
+.dual-arrows{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0 4px;margin-top:56px}
+.darr{border:0.5px solid #d1d5db;border-radius:4px;padding:4px 8px;font-size:11px;background:#fff;cursor:pointer;color:#374151;white-space:nowrap}
+.darr:hover{background:#f3f4f6}
+
+/* toggle switch */
+.toggle{position:relative;display:inline-block;width:36px;height:20px}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#d1d5db;border-radius:20px;transition:.2s}
+.toggle-slider:before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked+.toggle-slider{background:#16a34a}
+.toggle input:checked+.toggle-slider:before{transform:translateX(16px)}
+
+/* tag chip */
+.tag-chip{display:inline-flex;align-items:center;gap:4px;background:#eff6ff;color:#1d4ed8;border-radius:4px;padding:3px 8px;font-size:12px;font-weight:500}
+.tag-chip button{background:none;border:none;cursor:pointer;color:#6b7280;font-size:13px;line-height:1;padding:0}
+
+/* section header bar */
+.section-bar{padding:8px 12px;border-radius:6px;font-size:12px;font-weight:600;color:#fff;margin-bottom:10px;cursor:pointer}
+.bar-green{background:#16a34a}
+.bar-amber{background:#d97706}
+.bar-blue{background:#2563eb}
+
+/* info banner */
+.info-banner{background:#eff6ff;border:0.5px solid #bfdbfe;border-radius:6px;padding:8px 12px;font-size:12px;color:#1e40af;margin-bottom:14px}
+
+/* row actions */
+.btn-sm{border:0.5px solid #d1d5db;border-radius:4px;padding:4px 10px;font-size:12px;background:#fff;cursor:pointer;color:#374151}
+.btn-sm:hover{background:#f3f4f6}
+.btn-sm-blue{border:none;border-radius:4px;padding:4px 10px;font-size:12px;background:#2563eb;cursor:pointer;color:#fff}
+.btn-sm-blue:hover{background:#1d4ed8}
+.btn-icon-red{background:none;border:none;cursor:pointer;color:#dc2626;font-size:14px;padding:4px}
+.btn-icon-red:hover{color:#b91c1c}
+.ctx-item{padding:9px 16px;font-size:13px;color:#374151;cursor:pointer}
+.ctx-item:hover{background:#f3f4f6}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <div class="logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><polygon points="12,2 22,7 22,17 12,22 2,17 2,7" fill="#4a7fcb" stroke="#6a9de0" stroke-width="1"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="#fff" font-weight="bold">V8</text></svg>
+    Voyager 8
+  </div>
+  <div class="nav-item">Home</div>
+  <div class="nav-item">Setup <span class="nav-arrow">▾</span></div>
+  <div class="nav-item">Admin <span class="nav-arrow">▾</span></div>
+  <div class="nav-item">System <span class="nav-arrow">▾</span></div>
+  <div class="nav-item active">Security <span class="nav-arrow">▾</span></div>
+  <div class="nav-item">Toolbox <span class="nav-arrow">▾</span></div>
+  <div class="nav-item">Reports <span class="nav-arrow">▾</span></div>
+  <div class="nav-item">Interfaces <span class="nav-arrow">▾</span></div>
+  <div class="topnav-right">
+    <span class="topnav-icon">☆</span>
+    <span class="topnav-icon">?</span>
+    <div class="avatar">AB</div>
+  </div>
+</div>
+
+<div style="display:flex">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+    <div class="sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+    <div class="sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+    <div class="sidebar-icon active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 4v6c0 5-3.5 9-7 10C8.5 21 5 17 5 12V6l7-4z"/></svg></div>
+    <div style="margin-top:auto" class="sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+  </div>
+
+  <div class="main" style="flex:1">
+    <div class="page-header">
+      <div class="header-row">
+        <div class="shield-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M12 2l7 4v6c0 5-3.5 9-7 10C8.5 21 5 17 5 12V6l7-4z"/></svg>
+        </div>
+        <div>
+          <div class="page-title">Security Hub</div>
+          <div class="page-sub">Manage security groups and user access</div>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab" onclick="showTab('groups',this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 4v6c0 5-3.5 9-7 10C8.5 21 5 17 5 12V6l7-4z"/></svg>
+          Security Groups
+        </div>
+        <div class="tab active" onclick="showTab('users',this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          Users
+        </div>
+        <div class="tab" onclick="showTab('roles',this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+          Roles
+        </div>
+        <div class="tab" onclick="showTab('reports',this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Reports
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- SECURITY GROUPS -->
+      <div id="tab-groups" style="display:none">
+        <div class="toolbar">
+          <div class="search-wrap"><span class="search-icon">&#128269;</span><input type="text" placeholder="Search" oninput="filterTable('groups-tbody',this.value,[0,1])"></div>
+          <span class="count-badge">244</span><span class="toolbar-label">Groups</span>
+          <div class="ml-auto" style="display:flex;gap:8px"><button class="btn-primary">+ Add Group</button><button class="btn-more">⋮</button></div>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr>
+            <th style="width:32px"><input type="checkbox" class="cb"></th>
+            <th>Group <span class="sort-icon">⇅</span></th><th>Description <span class="sort-icon">⇅</span></th>
+            <th>Users <span class="sort-icon">⇅</span></th><th>Accounts <span class="sort-icon">⇅</span></th>
+            <th>Charge Codes <span class="sort-icon">⇅</span></th><th>Acct Trees <span class="sort-icon">⇅</span></th><th>Books <span class="sort-icon">⇅</span></th>
+          </tr></thead><tbody id="groups-tbody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div id="tab-users">
+        <div class="toolbar">
+          <div class="search-wrap"><span class="search-icon">&#128269;</span><input type="text" placeholder="Search" oninput="filterTable('users-tbody',this.value,[0,1,2])"></div>
+          <span class="count-badge">10</span><span class="toolbar-label">Users</span>
+          <div class="ml-auto" style="display:flex;gap:8px;position:relative">
+            <button class="btn-primary">+ Add User</button>
+            <button class="btn-more" onclick="toggleUserMenu(event)">⋮</button>
+            <div id="userContextMenu" style="display:none;position:absolute;top:36px;right:0;background:#fff;border:0.5px solid #e0e0e0;border-radius:7px;box-shadow:0 4px 12px rgba(0,0,0,.1);min-width:160px;z-index:50;overflow:hidden">
+              <div class="ctx-item">Export to CSV</div>
+              <div class="ctx-item">Update from CSV</div>
+              <div class="ctx-item">Bulk Edit</div>
+              <div class="ctx-item">Refresh Data</div>
+            </div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr>
+            <th style="width:32px"><input type="checkbox" class="cb"></th>
+            <th>Login <span class="sort-icon">⇅</span></th><th>Name <span class="sort-icon">⇅</span></th>
+            <th>Email <span class="sort-icon">⇅</span></th><th>Groups <span class="sort-icon">⇅</span></th>
+            <th>Status <span class="sort-icon">⇅</span></th><th>Last Login <span class="sort-icon">⇅</span></th>
+          </tr></thead><tbody id="users-tbody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ROLES -->
+      <div id="tab-roles" style="display:none">
+        <div class="toolbar">
+          <div class="search-wrap"><span class="search-icon">&#128269;</span><input type="text" placeholder="Search" oninput="filterTable('roles-tbody',this.value,[0,1,2])"></div>
+          <span class="count-badge">8</span><span class="toolbar-label">Roles</span>
+          <div class="ml-auto" style="display:flex;gap:8px"><button class="btn-primary">+ Add Role</button><button class="btn-more">⋮</button></div>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr>
+            <th style="width:32px"><input type="checkbox" class="cb"></th>
+            <th>Role ID <span class="sort-icon">⇅</span></th><th>Name <span class="sort-icon">⇅</span></th>
+            <th>Description <span class="sort-icon">⇅</span></th><th>Groups <span class="sort-icon">⇅</span></th><th>Permissions <span class="sort-icon">⇅</span></th>
+          </tr></thead><tbody id="roles-tbody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- REPORTS -->
+      <div id="tab-reports" style="display:none">
+        <div class="toolbar">
+          <div class="search-wrap"><span class="search-icon">&#128269;</span><input type="text" placeholder="Search" oninput="filterTable('reports-tbody',this.value,[0,1])"></div>
+          <span class="count-badge">15</span><span class="toolbar-label">Reports Role Access</span>
+          <div class="ml-auto" style="display:flex;gap:8px;align-items:center">
+            <select class="filter-select"><option>All Menus</option><option>Voyager 8 Residential</option><option>Voyager 8 Commercial</option><option>AR Manager JS</option><option>AR Manager - Payments Admin</option><option>facilitiesmanager</option></select>
+            <select class="filter-select"><option>All Report Types</option><option>SQL</option><option>YSR</option></select>
+            <button class="btn-primary">+ Add Report</button><button class="btn-more">⋮</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr>
+            <th style="width:32px"><input type="checkbox" class="cb"></th>
+            <th>Report <span class="sort-icon">⇅</span></th><th>Menu <span class="sort-icon">⇅</span></th>
+            <th>Report Type <span class="sort-icon">⇅</span></th><th style="text-align:right">Roles <span class="sort-icon">⇅</span></th>
+          </tr></thead><tbody id="reports-tbody"></tbody></table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== GROUP DRAWER ===================== -->
+<div class="drawer-overlay" id="groupOverlay" onclick="closeGroupDrawer()"></div>
+<div class="drawer" id="groupDrawer">
+  <div class="drawer-header">
+    <div class="drawer-title-row">
+      <div class="drawer-shield"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M12 2l7 4v6c0 5-3.5 9-7 10C8.5 21 5 17 5 12V6l7-4z"/></svg></div>
+      <div><div class="drawer-title" id="gCode">12345</div><div class="drawer-sub" id="gName">Anand Group</div></div>
+      <button class="drawer-close" onclick="closeGroupDrawer()">×</button>
+    </div>
+    <div class="drawer-tabs">
+      <div class="dtab active" onclick="showDTab('gSecurity',this,'g')">Security Group</div>
+      <div class="dtab" onclick="showDTab('gUsers',this,'g')">Users</div>
+      <div class="dtab" onclick="showDTab('gPermissions',this,'g')">Permissions</div>
+      <div class="dtab" onclick="showDTab('gAccounts',this,'g')">Accounts</div>
+      <div class="dtab" onclick="showDTab('gAcctTrees',this,'g')">Acct Trees</div>
+      <div class="dtab" onclick="showDTab('gChargeCodes',this,'g')">Charge Codes</div>
+      <div class="dtab" onclick="showDTab('gDisplayTypes',this,'g')">Display Types</div>
+      <div class="dtab" onclick="showDTab('gExpenseType',this,'g')">Expense Type Restrictions</div>
+      <div class="dtab" onclick="showDTab('gBooks',this,'g')">Books</div>
+      <div class="dtab" onclick="showDTab('gVoyager7s',this,'g')">Voyager 7s Menus</div>
+    </div>
+  </div>
+  <div class="drawer-body">
+    <!-- Security Group -->
+    <div id="gSecurity">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px">
+        <div>
+          <div class="section-title">General</div>
+          <div class="d-label mb12">Description</div><input class="d-input mb12" value="Anand Group">
+          <div class="d-label">Code *</div><input class="d-input" value="12345">
+        </div>
+        <div>
+          <div class="section-title">Other</div>
+          <div class="d-label">Notes</div><textarea class="d-textarea">test</textarea>
+        </div>
+        <div>
+          <div class="section-title">Journal Entry Restrictions</div>
+          <div class="d-checkbox-row"><input type="checkbox"> No cash JE</div>
+          <div class="d-checkbox-row"><input type="checkbox"> No accrual JE</div>
+        </div>
+      </div>
+    </div>
+    <!-- G Users -->
+    <div id="gUsers" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <input class="d-input" style="width:200px" placeholder="Search">
+        <span class="count-badge">5</span><span class="toolbar-label">Users</span>
+        <div class="ml-auto" style="display:flex;gap:8px;align-items:center">
+          <select class="filter-select"><option>Active</option><option>Inactive</option><option>All</option></select>
+          <button class="btn-primary">+ Add User(s)</button>
+        </div>
+      </div>
+      <table class="d-table"><thead><tr><th>User Name</th><th>Email</th><th>Property Security</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>A K</td><td>Aruna.Kolape@local.com</td><td>All</td><td><span class="status-pill status-active">Active</span></td><td><button class="btn-sm">Deactivate</button></td></tr>
+        <tr><td>fn Pandare</td><td>1862</td><td>All</td><td><span class="status-pill status-active">Active</span></td><td><button class="btn-sm">Deactivate</button></td></tr>
+        <tr><td>gate</td><td>block</td><td>All</td><td><span class="status-pill status-active">Active</span></td><td><button class="btn-sm">Deactivate</button></td></tr>
+        <tr><td>Hyena V7-8</td><td>test@yardi.com</td><td>All</td><td><span class="status-pill status-active">Active</span></td><td><button class="btn-sm">Deactivate</button></td></tr>
+        <tr><td>re</td><td>cream</td><td>All</td><td><span class="status-pill status-active">Active</span></td><td><button class="btn-sm">Deactivate</button></td></tr>
+      </tbody></table>
+    </div>
+    <!-- G Permissions -->
+    <div id="gPermissions" style="display:none">
+      <div style="font-size:12px;color:#6b7280;margin-bottom:12px;display:flex;align-items:center;gap:5px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg> Affecting 6 users
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <div><div class="d-label">Program Type</div><select class="filter-select"><option>Any</option><option>Core</option><option>Adhoc</option><option>PHA</option></select></div>
+        <div><div class="d-label">Description</div><input class="d-input" style="width:150px" placeholder="Description"></div>
+        <div><div class="d-label">Access</div><select class="filter-select"><option>Any</option><option>Access</option><option>Read</option><option>Read &amp; Write</option><option>No Access</option></select></div>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:2px"><input type="checkbox" class="cb"> New Only</label>
+        <button class="btn-primary" style="margin-bottom:2px">Search</button>
+        <button class="btn-sm" style="margin-bottom:2px">Clear</button>
+      </div>
+      <table class="d-table"><thead><tr><th>Description</th><th>Access</th><th>Program Type</th></tr></thead>
+      <tbody>
+        <tr><td></td><td><span class="ab ab-access">Access</span></td><td>Adhoc</td></tr>
+        <tr><td>1098: Electronic File Generation for 1098</td><td><span class="ab ab-rw">Read &amp; Write</span></td><td>Core</td></tr>
+        <tr><td>1099: Combined Federal/State Filing Setup</td><td><span class="ab ab-rw">Read &amp; Write</span></td><td>Core</td></tr>
+        <tr><td>1099: Software Supplier Information</td><td><span class="ab ab-read">Read</span></td><td>Core</td></tr>
+        <tr><td>1toMany-Add</td><td><span class="ab ab-access">Access</span></td><td>Core</td></tr>
+        <tr><td>1toMany-Delete</td><td><span class="ab ab-access">Access</span></td><td>Core</td></tr>
+        <tr><td>50058 Override Maximum Occupancy Standard</td><td><span class="ab ab-access">Access</span></td><td>PHA</td></tr>
+        <tr><td>50058 Override Minimum Occupancy Standard</td><td><span class="ab ab-noaccess">No Access</span></td><td>PHA</td></tr>
+        <tr><td>50058 Override TTP Baseline</td><td><span class="ab ab-noaccess">No Access</span></td><td>PHA</td></tr>
+        <tr><td>58 All Cond - SSRS Report</td><td><span class="ab ab-noaccess">No Access</span></td><td>PHA</td></tr>
+        <tr><td>58 All Full Report</td><td><span class="ab ab-noaccess">No Access</span></td><td>PHA</td></tr>
+      </tbody></table>
+    </div>
+    <!-- G Accounts -->
+    <div id="gAccounts" style="display:none">
+      <div class="dual-wrap">
+        <div><div class="dual-col-hdr">Access</div><div class="dual-sr"><input class="dual-s" placeholder="Search"><span class="count-badge">12</span></div>
+          <div class="dual-list">
+            <div class="dl-hdr"><input type="checkbox" class="cb"> GL Account</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000060)Retail Area</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000070)Occupied Retail Area</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000080)Industrial Area</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000090)Occupied Industrial Area</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000100)Restaurant Area</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000110)Occupied Restaurant Area</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000120)Unit Area</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000130)Occupied Unit Area</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000140)Other Area</div>
+          </div>
+        </div>
+        <div class="dual-arrows"><button class="darr">← ALL</button><button class="darr">←</button><button class="darr">→</button><button class="darr">ALL →</button></div>
+        <div><div class="dual-col-hdr">No Access</div><div class="dual-sr"><input class="dual-s" placeholder="Search"><span class="count-badge">10</span></div>
+          <div class="dual-list">
+            <div class="dl-hdr"><input type="checkbox" class="cb"> GL Account</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000001)misc damages</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000002)carpet damages</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000003)window damage</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000004)roof damage</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000006)Pet poop infraction</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000020)Total Rentable Area</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000030)Occupied Total Area</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000040)Office Area</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (00000050)Occupied Office Area</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- G Acct Trees -->
+    <div id="gAcctTrees" style="display:none">
+      <div class="dual-wrap">
+        <div><div class="dual-col-hdr">Access</div><div class="dual-sr"><input class="dual-s" placeholder="Search"><span class="count-badge">10</span></div>
+          <div class="dual-list">
+            <div class="dl-hdr"><input type="checkbox" class="cb"> Account Tree</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (abc_tm)TestTree</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (abcP_tm10)TestTree10</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (abcP_tm11)PankajTestTree1010</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (abcP_tm12)PankajTestTree1012</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (abcP_tm13)PankajTestTree1013</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (abcP_tm20)TestTree20</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (abcp_tm21)PankajTestTree1021</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (abcP_tm24)PankajTestTree24</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (abco_tm25)PankajTestTree25</div>
+          </div>
+        </div>
+        <div class="dual-arrows"><button class="darr">← ALL</button><button class="darr">←</button><button class="darr">→</button><button class="darr">ALL →</button></div>
+        <div><div class="dual-col-hdr">No Access</div><div class="dual-sr"><input class="dual-s" placeholder="Search"><span class="count-badge">1</span></div>
+          <div class="dual-list">
+            <div class="dl-hdr"><input type="checkbox" class="cb"> Account Tree</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (009909)New Test Account Tree</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- G Charge Codes -->
+    <div id="gChargeCodes" style="display:none">
+      <div class="dual-wrap">
+        <div><div class="dual-col-hdr">Access</div><div class="dual-sr"><input class="dual-s" placeholder="Search"><span class="count-badge">10</span></div>
+          <div class="dual-list">
+            <div class="dl-hdr"><input type="checkbox" class="cb"> Charge Code</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (18)Special Activity</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (21)Capping Charges</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (22)Recovery Errors</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (421-a)Sctn 421A Adj</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (aappfee)Additional Application Fee</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (achconv)ACH Convenience Fee</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (admin)Administration Fee</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (aircond)Air Conditioning</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (al rent)AL Rent</div>
+          </div>
+        </div>
+        <div class="dual-arrows"><button class="darr">← ALL</button><button class="darr">←</button><button class="darr">→</button><button class="darr">ALL →</button></div>
+        <div><div class="dual-col-hdr">No Access</div><div class="dual-sr"><input class="dual-s" placeholder="Search"><span class="count-badge">4</span></div>
+          <div class="dual-list">
+            <div class="dl-hdr"><input type="checkbox" class="cb"> Charge Code</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (.grent)ginos reconciliation charge code</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (.grent2)Ginos Rent Charge Code 2</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (19)Beauty/Barber</div>
+            <div class="dl-item"><input type="checkbox" class="cb"> (20)Void Charges</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- G Display Types -->
+    <div id="gDisplayTypes" style="display:none">
+      <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:14px">
+        <div><div class="d-label">Type</div><select class="filter-select" style="width:200px"><option>All</option><option>Charge</option><option>Receipt</option></select></div>
+        <div style="flex:1"><div style="display:flex;align-items:center;gap:8px"><input class="dual-s" style="flex:1" placeholder="Search"><span class="count-badge">10</span><span style="color:#6b7280">Items</span></div></div>
+      </div>
+      <table class="d-table"><thead><tr><th>Display Type</th><th>Type</th><th style="text-align:right">Restrict</th></tr></thead>
+      <tbody>
+        <tr><td>12Seg - 12 Segments</td><td><span class="type-sql">Charge</span></td><td style="text-align:right"><input type="checkbox" class="cb" checked></td></tr>
+        <tr><td>2 taxes - 2 taxes</td><td><span class="type-sql">Charge</span></td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>All - All Headers Ticked</td><td><span class="type-sql">Charge</span></td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>artdom - Domestic charge display</td><td><span class="type-sql">Charge</span></td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>AutoSeg - Automated Segment</td><td><span class="type-sql">Charge</span></td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>becky - testshowunit</td><td><span class="type-sql">Charge</span></td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>c1 - domestic charge display - RT</td><td><span class="type-sql">Charge</span></td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>charge13 - For testing purpose</td><td><span class="type-sql">Charge</span></td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>cmcharge - Cash Management Charge Display</td><td><span class="type-sql">Charge</span></td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>CMchint - CMPI Charge International</td><td><span class="type-sql">Charge</span></td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+      </tbody></table>
+    </div>
+    <!-- G Expense Type -->
+    <div id="gExpenseType" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px"><input class="dual-s" style="flex:1" placeholder="Search"><span class="count-badge">16</span><span style="color:#6b7280">Items</span></div>
+      <table class="d-table"><thead><tr><th>Expense Type</th><th style="text-align:right">Restrict</th></tr></thead>
+      <tbody>
+        <tr><td>A&amp;P</td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>Capital</td><td style="text-align:right"><input type="checkbox" class="cb" checked></td></tr>
+        <tr><td>Construction</td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>Expense</td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>Maintenance</td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>Office</td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>Office1</td><td style="text-align:right"><input type="checkbox" class="cb" checked></td></tr>
+        <tr><td>Preliminary</td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>RandD</td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>Repairs</td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>sarang</td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>Tenant Improvement</td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>XLegacyX</td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>YES Utility Mgmt</td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>zztype</td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+        <tr><td>test1</td><td style="text-align:right"><input type="checkbox" class="cb"></td></tr>
+      </tbody></table>
+    </div>
+    <!-- G Books -->
+    <div id="gBooks" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px"><input class="dual-s" style="flex:1" placeholder="Search"><span class="count-badge">3</span><span style="color:#6b7280">Books</span></div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <select class="d-select"><option>Cash</option><option>Accrual</option><option>Salde Forecast Book</option></select>
+        <select class="d-select"><option>Accrual</option><option>Cash</option><option>Salde Forecast Book</option></select>
+        <select class="d-select"><option>Salde Forecast Book</option><option>Cash</option><option>Accrual</option></select>
+        <select class="d-select"><option>--- Select ---</option><option>Cash</option><option>Accrual</option></select>
+        <select class="d-select"><option>--- Select ---</option><option>Cash</option><option>Accrual</option></select>
+        <select class="d-select"><option>--- Select ---</option><option>Cash</option><option>Accrual</option></select>
+        <select class="d-select"><option>--- Select ---</option><option>Cash</option><option>Accrual</option></select>
+        <select class="d-select"><option>--- Select ---</option><option>Cash</option><option>Accrual</option></select>
+      </div>
+    </div>
+    <!-- G Voyager 7s -->
+    <div id="gVoyager7s" style="display:none">
+      <div style="color:#6b7280;font-size:13px;padding:20px 0">No Voyager 7s menu assignments configured for this group.</div>
+    </div>
+  </div>
+  <div class="drawer-footer">
+    <button class="btn-cancel" onclick="closeGroupDrawer()">Cancel</button>
+    <button class="btn-save">Save</button>
+  </div>
+</div>
+
+<!-- ===================== USER DRAWER ===================== -->
+<div class="drawer-overlay" id="userOverlay" onclick="closeUserDrawer()"></div>
+<div class="drawer" id="userDrawer">
+  <div class="drawer-header">
+    <div class="drawer-title-row">
+      <div class="drawer-avatar-circle" id="uAvatar">JS</div>
+      <div><div class="drawer-title" id="uName">John Smith</div><div class="drawer-sub" id="uEmail">jsmith@yardi.com</div></div>
+      <button class="drawer-close" onclick="closeUserDrawer()">×</button>
+    </div>
+    <div class="drawer-tabs">
+      <div class="dtab active" onclick="showDTab('uRoles',this,'u')">Roles</div>
+      <div class="dtab" onclick="showDTab('uDetails',this,'u')">Details</div>
+      <div class="dtab" onclick="showDTab('uSettings',this,'u')">Settings</div>
+      <div class="dtab" onclick="showDTab('uProgramRights',this,'u')">Program Rights</div>
+      <div class="dtab" onclick="showDTab('uRegional',this,'u')">Regional Settings</div>
+      <div class="dtab" onclick="showDTab('uPageAccess',this,'u')">Page Access</div>
+      <div class="dtab" onclick="showDTab('uElementAccess',this,'u')">Element Access</div>
+      <div class="dtab" onclick="showDTab('uVoyagerAccess',this,'u')">Voyager Access</div>
+      <div class="dtab" onclick="showDTab('uVoyagerPlus',this,'u')">Voyager Plus</div>
+      <div class="dtab" onclick="showDTab('uSeniorMgmt',this,'u')">Senior User Management</div>
+    </div>
+  </div>
+  <div class="drawer-body">
+
+    <!-- ROLES -->
+    <div id="uRoles">
+      <div class="access-subtabs">
+        <div class="atab active" onclick="showSubTab('uRolesAccess',this,'uRoles')">Access <span class="atab-badge">7</span></div>
+        <div class="atab" onclick="showSubTab('uRolesNoAccess',this,'uRoles')">No Access <span class="atab-badge-gray">8</span></div>
+      </div>
+      <div id="uRolesAccess">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <input class="dual-s" style="width:200px" placeholder="Search">
+          <span class="count-badge">7</span><span class="toolbar-label">Roles</span>
+          <div class="ml-auto"><select class="filter-select"><option>All Products</option><option>Voyager 8 Residential</option><option>Voyager 8 Commercial</option></select></div>
+        </div>
+        <table class="d-table"><thead><tr><th>Role</th><th>Menu</th><th>Product</th><th>Licensed</th><th>Type</th><th>Access</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td>Amol-Cash</td><td>BillPayCSD</td><td>Procure to Pay</td><td style="color:#16a34a">✓</td><td>Company</td><td><input type="checkbox" class="cb" checked></td><td><input type="checkbox" class="cb"></td></tr>
+          <tr><td>V8 Res-Cash</td><td>Voyager 8 Residential</td><td>Res Manager</td><td style="color:#16a34a">✓</td><td>Company</td><td><input type="checkbox" class="cb" checked></td><td><input type="checkbox" class="cb"></td></tr>
+          <tr><td>Voyager 8 Commercial</td><td>Voyager 8 Commercial</td><td>Voyager 8 Commercial</td><td style="color:#16a34a">✓</td><td>Global</td><td><input type="checkbox" class="cb" checked></td><td><input type="checkbox" class="cb" checked></td></tr>
+          <tr><td>Voyager 8 Commercial - Accounting</td><td>Voyager 8 Commercial - Accounting</td><td>Voyager 8 Commercial</td><td style="color:#16a34a">✓</td><td>Global</td><td><input type="checkbox" class="cb" checked></td><td><input type="checkbox" class="cb"></td></tr>
+          <tr><td>Voyager 8 Residential - Admin</td><td>Voyager 8 Residential</td><td>Res Manager</td><td style="color:#16a34a">✓</td><td>Global</td><td><input type="checkbox" class="cb" checked></td><td><input type="checkbox" class="cb"></td></tr>
+          <tr><td>Voyager 8 Residential CMQA</td><td>Voyager 8 Residential</td><td>Res Manager</td><td style="color:#16a34a">✓</td><td>Company</td><td><input type="checkbox" class="cb" checked></td><td><input type="checkbox" class="cb"></td></tr>
+          <tr><td>Voyager Admin</td><td>VoyagerSetup</td><td>VoyagerSetup</td><td style="color:#16a34a">✓</td><td>Global</td><td><input type="checkbox" class="cb" checked></td><td><input type="checkbox" class="cb"></td></tr>
+        </tbody></table>
+      </div>
+      <div id="uRolesNoAccess" style="display:none">
+        <div style="color:#6b7280;font-size:13px;padding:12px 0">8 roles with no access assigned.</div>
+      </div>
+    </div>
+
+    <!-- DETAILS -->
+    <div id="uDetails" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+        <!-- Left col -->
+        <div style="grid-column:1/3">
+          <div class="form-grid-3 mb12">
+            <div><div class="d-label">Code *</div><input class="d-input" value="jsmith"></div>
+            <div><div class="d-label">Dear</div><input class="d-input" value=""></div>
+            <div></div>
+          </div>
+          <div class="form-grid-2 mb12">
+            <div><div class="d-label">First Name</div><input class="d-input" value="John"></div>
+            <div><div class="d-label">Last Name</div><input class="d-input" value="Smith"></div>
+          </div>
+          <div class="mb12"><div class="d-label">Email/User *</div><input class="d-input" value="jsmith@yardi.com"></div>
+          <div class="mb12"><div class="d-label">Address</div><input class="d-input" value=""></div>
+          <div class="form-grid-2 mb12">
+            <div><div class="d-label">Address Line 2 (Optional)</div><input class="d-input" value=""></div>
+            <div><div class="d-label">Address Line 3 (Optional)</div><input class="d-input" value=""></div>
+          </div>
+          <div class="form-grid-2 mb12">
+            <div><div class="d-label">City</div><input class="d-input" value=""></div>
+            <div><div class="d-label">County</div><input class="d-input" value=""></div>
+          </div>
+          <div class="form-grid-2 mb12">
+            <div><div class="d-label">State</div><select class="d-select"></select></div>
+            <div><div class="d-label">Postcode</div><input class="d-input" value=""></div>
+          </div>
+          <div class="form-grid-2 mb12">
+            <div><div class="d-label">Country</div><input class="d-input" value=""></div>
+            <div><div class="d-label">Phone</div><input class="d-input" value=""></div>
+          </div>
+          <div class="form-grid-2 mb12">
+            <div><div class="d-label">Department</div><select class="d-select"></select></div>
+            <div><div class="d-label">Title</div><select class="d-select"></select></div>
+          </div>
+          <div class="mb12"><div class="d-label">User *</div><input class="d-input" value="jsmith@yardi.com"></div>
+          <div class="mb12"><label class="d-checkbox-row"><input type="checkbox"> Inactive</label></div>
+          <div class="mb12"><div class="d-label">Notes</div><input class="d-input" value=""></div>
+        </div>
+        <!-- Right col -->
+        <div>
+          <div class="mb12"><div class="d-label">Group *</div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;border:0.5px solid #d1d5db;border-radius:5px;padding:6px 8px;background:#fff">
+              <span class="tag-chip">ySupport <button>×</button></span>
+            </div>
+          </div>
+          <div class="mb12"><div class="d-label">Property Security</div><input class="d-input" value=""></div>
+          <div class="section-bar bar-green mb12">Include in List</div>
+          <div class="d-checkbox-row mb12"><input type="checkbox"> Work Order Labor</div>
+          <div class="d-checkbox-row mb12"><input type="checkbox"> Inspector</div>
+          <div class="d-checkbox-row mb12"><input type="checkbox"> Caseworker</div>
+          <div class="section-bar bar-amber mb12">User Defined Fields</div>
+          <div class="mb12"><div class="d-label">Field 1</div><input class="d-input" value=""></div>
+          <div class="mb12"><div class="d-label">Field 2</div><input class="d-input" value=""></div>
+          <div class="mb12"><div class="d-label">Field 3</div><input class="d-input" value=""></div>
+          <div class="mb12"><div class="d-label">Field 4</div><input class="d-input" value=""></div>
+          <div class="section-bar bar-blue mb12">GL Accounts</div>
+          <div class="mb12"><div class="d-label">Pay Account</div><input class="d-input" value=""></div>
+          <div class="mb12"><div class="d-label">Charge Code</div><input class="d-input" value=""></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="uSettings" style="display:none">
+      <div class="section-title mb16">User Settings</div>
+      <div class="form-grid-2 mb16">
+        <div><div class="d-label">Access to past days</div><input class="d-input" value="0"></div>
+        <div><div class="d-label">Access to future days</div><input class="d-input" value="0"></div>
+      </div>
+      <div class="form-grid-2 mb16">
+        <div><div class="d-label">Access to past periods</div><input class="d-input" value="100"></div>
+        <div><div class="d-label">Access to future periods</div><input class="d-input" value="100"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 32px">
+        <div class="d-checkbox-row"><input type="checkbox"> View payroll trans</div>
+        <div class="d-checkbox-row"><input type="checkbox"> User can bypass leasing week security</div>
+        <div class="d-checkbox-row"><input type="checkbox" checked> View all financial batches</div>
+        <div class="d-checkbox-row"><input type="checkbox"> Receive license messages before expiration date</div>
+        <div class="d-checkbox-row"><input type="checkbox"> View all conductor reports</div>
+        <div class="d-checkbox-row"><input type="checkbox"> Receive license messages after expiration date</div>
+        <div class="d-checkbox-row"><input type="checkbox"> View Secured Attachments</div>
+        <div class="d-checkbox-row"><input type="checkbox"> Receive stack/SQL trace messages</div>
+        <div class="d-checkbox-row"><input type="checkbox"> Post to control accounts</div>
+        <div class="d-checkbox-row"><input type="checkbox"> VoyagerPlus only user</div>
+        <div class="d-checkbox-row"><input type="checkbox"> Override property account security</div>
+        <div></div>
+        <div class="d-checkbox-row"><input type="checkbox"> Post to intercompany segments</div>
+        <div></div>
+        <div class="d-checkbox-row"><input type="checkbox"> Interface user</div>
+        <div></div>
+        <div class="d-checkbox-row"><input type="checkbox"> Read-Only license <span style="color:#6b7280;font-size:11px;margin-left:6px">(Group security permissions must also be set to Most Restrictive)</span></div>
+      </div>
+    </div>
+
+    <!-- PROGRAM RIGHTS -->
+    <div id="uProgramRights" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+        <div>
+          <div class="section-title mb12">Management</div>
+          <div class="d-checkbox-row mb12"><input type="checkbox"> Property management</div>
+          <div class="d-checkbox-row mb12"><input type="checkbox"> Construction</div>
+          <div class="d-checkbox-row mb12"><input type="checkbox"> Maintenance</div>
+          <div class="d-checkbox-row mb12"><input type="checkbox"> Affordable</div>
+          <div class="d-checkbox-row mb12"><input type="checkbox"> Advanced budget</div>
+          <div class="d-checkbox-row mb12"><input type="checkbox"> International module</div>
+          <div class="d-checkbox-row mb12"><input type="checkbox"> Investment management</div>
+          <div class="d-checkbox-row mb12"><input type="checkbox"> Commercial</div>
+          <div class="d-checkbox-row mb12"><input type="checkbox"> PortfolioVMF</div>
+        </div>
+        <div>
+          <div class="section-title mb12">Property list</div>
+          <div class="d-label">ABF read-only property list</div>
+          <input class="d-input" value="">
+        </div>
+      </div>
+    </div>
+
+    <!-- REGIONAL SETTINGS -->
+    <div id="uRegional" style="display:none">
+      <div style="max-width:480px">
+        <div class="mb12"><div class="d-label">Country</div><select class="d-select"><option></option><option>United States</option><option>United Kingdom</option><option>Canada</option></select></div>
+        <div class="mb12"><div class="d-label">Language *</div><select class="d-select"><option>English (United States)</option><option>Spanish</option><option>French</option></select></div>
+        <div class="mb12"><div class="d-label">Region (transaction)</div><select class="d-select"><option>All</option></select></div>
+        <div class="mb12"><div class="d-label">Culture *</div><select class="d-select"><option>English (United States)</option><option>Spanish</option></select></div>
+        <div class="d-checkbox-row"><input type="checkbox"> Use 24 hour time format</div>
+      </div>
+    </div>
+
+    <!-- PAGE ACCESS -->
+    <div id="uPageAccess" style="display:none">
+      <div class="info-banner">When Not Marked As <strong>(Default)</strong> , User Level Access Takes Priority Over Role Level Access</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <input class="dual-s" style="width:200px" placeholder="Search">
+        <span class="count-badge">8</span><span class="toolbar-label">Tokens</span>
+        <div class="ml-auto"><select class="filter-select"><option>Select Product</option><option>Admin</option><option>angularadmin</option><option>ARManagerNET A13</option></select></div>
+      </div>
+      <table class="d-table"><thead><tr><th>Security Token</th><th>Product</th><th>Licensed</th><th>Access</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>Admin Dashboard</td><td>Admin</td><td style="color:#16a34a">✓</td><td><input type="checkbox" class="cb" checked></td><td><button class="btn-sm-blue">Save</button> <button class="btn-sm">Reset</button></td></tr>
+        <tr><td>Financial Reports (not in use)</td><td>angularadmin</td><td style="color:#16a34a">✓</td><td><input type="checkbox" class="cb" checked></td><td><button class="btn-sm-blue">Save</button> <button class="btn-sm">Reset</button></td></tr>
+        <tr><td>sharedt</td><td>angularadmin</td><td style="color:#16a34a">✓</td><td><div style="display:flex;align-items:center;gap:4px"><input type="checkbox" class="cb" checked><span class="default-badge">Default</span></div></td><td><button class="btn-sm-blue">Save</button> <button class="btn-sm">Reset</button></td></tr>
+        <tr><td>Add Adjustment Batch</td><td>ARManagerNET A13</td><td style="color:#16a34a">✓</td><td><div style="display:flex;align-items:center;gap:4px"><input type="checkbox" class="cb" checked><span class="default-badge">Default</span></div></td><td><button class="btn-sm-blue">Save</button> <button class="btn-sm">Reset</button></td></tr>
+        <tr><td>Add Journal Batch</td><td>ARManagerNET A13</td><td style="color:#16a34a">✓</td><td><div style="display:flex;align-items:center;gap:4px"><input type="checkbox" class="cb" checked><span class="default-badge">Default</span></div></td><td><button class="btn-sm-blue">Save</button> <button class="btn-sm">Reset</button></td></tr>
+        <tr><td>Add Quick Charge Batch</td><td>ARManagerNET A13</td><td style="color:#16a34a">✓</td><td><div style="display:flex;align-items:center;gap:4px"><input type="checkbox" class="cb"><span class="default-badge">Default</span></div></td><td><button class="btn-sm-blue">Save</button> <button class="btn-sm">Reset</button></td></tr>
+        <tr><td>Add Quick Receipt</td><td>ARManagerNET A13</td><td style="color:#16a34a">✓</td><td><div style="display:flex;align-items:center;gap:4px"><input type="checkbox" class="cb"><span class="default-badge">Default</span></div></td><td><button class="btn-sm-blue">Save</button> <button class="btn-sm">Reset</button></td></tr>
+        <tr><td>Apply Advance Invoice</td><td>ARManagerNET A13</td><td style="color:#16a34a">✓</td><td><div style="display:flex;align-items:center;gap:4px"><input type="checkbox" class="cb" checked><span class="default-badge">Default</span></div></td><td><button class="btn-sm-blue">Save</button> <button class="btn-sm">Reset</button></td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- ELEMENT ACCESS -->
+    <div id="uElementAccess" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <input class="dual-s" style="width:200px" placeholder="Search">
+        <span class="count-badge">7</span><span class="toolbar-label">Elements</span>
+        <div class="ml-auto"><select class="filter-select"><option>Select Product</option><option>angularadmin</option><option>ARManagerNET A13</option></select></div>
+      </div>
+      <table class="d-table"><thead><tr><th>Security Token</th><th>Product</th><th>Licensed</th><th>Access Type</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>qaelemet1</td><td>angularadmin</td><td style="color:#16a34a">✓</td><td><select class="filter-select" style="font-size:12px;padding:4px 8px"><option>--- Select ---</option><option>readonly</option><option>hidden</option><option>editable</option></select></td><td><button class="btn-sm-blue">Save</button> <button class="btn-sm">Reset</button></td></tr>
+        <tr><td>sharedt</td><td>angularadmin</td><td style="color:#16a34a">✓</td><td><select class="filter-select" style="font-size:12px;padding:4px 8px"><option>--- Select ---</option><option>readonly</option><option>hidden</option><option>editable</option></select></td><td><button class="btn-sm-blue">Save</button> <button class="btn-sm">Reset</button></td></tr>
+        <tr><td>Access to Make Payment for Tenant/Non Tenant/Customer.</td><td>ARManagerNET A13</td><td style="color:#16a34a">✓</td><td><select class="filter-select" style="font-size:12px;padding:4px 8px"><option>--- Select ---</option><option>readonly</option><option>hidden</option><option>editable</option></select></td><td><button class="btn-sm-blue">Save</button> <button class="btn-sm">Reset</button></td></tr>
+        <tr><td>Access to Residential late fee tab Property screen</td><td>ARManagerNET A13</td><td style="color:#16a34a">✓</td><td><select class="filter-select" style="font-size:12px;padding:4px 8px"><option>--- Select ---</option><option>readonly</option><option>hidden</option><option>editable</option></select></td><td><button class="btn-sm-blue">Save</button> <button class="btn-sm">Reset</button></td></tr>
+        <tr><td>CMPI-allow default account edit access</td><td>ARManagerNET A13</td><td style="color:#16a34a">✓</td><td><select class="filter-select" style="font-size:12px;padding:4px 8px"><option>--- Select ---</option><option>readonly</option><option>hidden</option><option>editable</option></select></td><td><button class="btn-sm-blue">Save</button> <button class="btn-sm">Reset</button></td></tr>
+        <tr><td>Hold Charge toggle on Unpaid Charges screen on payers</td><td>ARManagerNET A13</td><td style="color:#16a34a">✓</td><td><select class="filter-select" style="font-size:12px;padding:4px 8px"><option>--- Select ---</option><option>readonly</option><option>hidden</option><option>editable</option></select></td><td><button class="btn-sm-blue">Save</button> <button class="btn-sm">Reset</button></td></tr>
+        <tr><td>To allow access to Residential Write off</td><td>ARManagerNET A13</td><td style="color:#16a34a">✓</td><td><select class="filter-select" style="font-size:12px;padding:4px 8px"><option selected>readonly</option><option>--- Select ---</option><option>hidden</option><option>editable</option></select></td><td><button class="btn-sm-blue">Save</button> <button class="btn-sm">Reset</button></td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- VOYAGER ACCESS -->
+    <div id="uVoyagerAccess" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <input class="dual-s" style="width:200px" placeholder="Search">
+        <span class="count-badge">15</span><span class="toolbar-label">Voyager Access</span>
+        <div class="ml-auto" style="display:flex;gap:8px;align-items:center">
+          <select class="filter-select"><option>Select Voyager Database</option></select>
+          <button class="btn-primary">Add</button>
+        </div>
+      </div>
+      <table class="d-table"><thead><tr><th>Voyager Name</th><th style="text-align:right">Action</th></tr></thead>
+      <tbody>
+        <tr><td>BBTKlo</td><td style="text-align:right"><button class="btn-icon-red">🗑</button></td></tr>
+        <tr><td>Breeze Autocaprestage</td><td style="text-align:right"><button class="btn-icon-red">🗑</button></td></tr>
+        <tr><td>Breeze Canada Premier</td><td style="text-align:right"><button class="btn-icon-red">🗑</button></td></tr>
+        <tr><td>Breeze US QA</td><td style="text-align:right"><button class="btn-icon-red">🗑</button></td></tr>
+        <tr><td>CM_Encrypted - igmedmlkz_CM_Encrypted</td><td style="text-align:right"><button class="btn-icon-red">🗑</button></td></tr>
+        <tr><td>CM_PR - igmedmlkz_CM_PR</td><td style="text-align:right"><button class="btn-icon-red">🗑</button></td></tr>
+        <tr><td>CM_Stripe</td><td style="text-align:right"><button class="btn-icon-red">🗑</button></td></tr>
+        <tr><td>CM_Weekly</td><td style="text-align:right"><button class="btn-icon-red">🗑</button></td></tr>
+        <tr><td>CRMS_QA - igmedmlkz_flexcrms</td><td style="text-align:right"><button class="btn-icon-red">🗑</button></td></tr>
+        <tr><td>Flex Intl</td><td style="text-align:right"><button class="btn-icon-red">🗑</button></td></tr>
+        <tr><td>Int RC ANZ rctol</td><td style="text-align:right"><button class="btn-icon-red">🗑</button></td></tr>
+        <tr><td>KubeQA_Domestic</td><td style="text-align:right"><button class="btn-icon-red">🗑</button></td></tr>
+        <tr><td>KubeQA_International</td><td style="text-align:right"><button class="btn-icon-red">🗑</button></td></tr>
+        <tr><td>RC Flex QA</td><td style="text-align:right"><button class="btn-icon-red">🗑</button></td></tr>
+        <tr><td>RCCM_MiddleEast</td><td style="text-align:right"><button class="btn-icon-red">🗑</button></td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- VOYAGER PLUS -->
+    <div id="uVoyagerPlus" style="display:none">
+      <div class="form-grid-3 mb12">
+        <div><div class="d-label">Certification</div><select class="d-select"><option>choose...</option></select></div>
+        <div><div class="d-label">Message Carrier</div><select class="d-select"><option>choose...</option></select></div>
+        <div><div class="d-label">Title</div><select class="d-select"><option>choose...</option><option>MD</option><option>RN</option><option>NP</option></select></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;align-items:end;margin-bottom:12px">
+        <div><div class="d-label">Time Zone</div><select class="d-select"><option>choose...</option><option>Eastern</option><option>Central</option><option>Mountain</option><option>Pacific</option></select></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;margin-top:18px">Active <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;margin-top:18px">Secure Docs <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+      </div>
+      <!-- sub-tabs inside VoyagerPlus -->
+      <div class="sub-tabs">
+        <div class="stab active" onclick="showVPTab('vpLoginSetup',this)">Login Setup</div>
+        <div class="stab" onclick="showVPTab('vpDiscipline',this)">Discipline</div>
+        <div class="stab" onclick="showVPTab('vpShift',this)">Shift</div>
+        <div class="stab" onclick="showVPTab('vpZone',this)">Zone</div>
+        <div class="stab" onclick="showVPTab('vpWage',this)">Wage</div>
+        <div class="stab" onclick="showVPTab('vpCoverage',this)">Coverage Area</div>
+        <div class="stab" onclick="showVPTab('vpAvailability',this)">Availability</div>
+      </div>
+      <div id="vpLoginSetup">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+          <div>
+            <div class="mb12"><div class="d-label">Group *</div>
+              <div style="border:0.5px solid #d1d5db;border-radius:5px;padding:6px 8px;background:#fff;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                <span class="tag-chip">WELL FPA(WELLFPA2) <button>×</button></span>
+              </div>
+            </div>
+            <div class="mb12"><div class="d-label">Property</div>
+              <div style="border:0.5px solid #d1d5db;border-radius:5px;padding:6px 8px;background:#fff;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                <span class="tag-chip">All Operators - Active &... <button>×</button></span>
+              </div>
+            </div>
+            <div class="mb12"><div class="d-label">Global contact</div><select class="d-select"><option>choose...</option></select></div>
+            <div class="mb12"><div class="d-label">Initials *</div><input class="d-input" value="JS"></div>
+            <div class="mb12"><div class="d-label">4 Character PIN *</div><input class="d-input" type="password" value="1234"></div>
+            <div class="mb12" style="display:flex;align-items:center;gap:8px;font-size:13px">Allow EHR login <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+            <div class="mb12"><div class="d-label">Language</div><select class="d-select"><option>choose...</option></select></div>
+          </div>
+          <div>
+            <div class="section-title mb12">Login</div>
+            <div class="mb12"><div class="d-label">User name *</div><input class="d-input" value="jsmith@yardi.com"></div>
+            <div class="mb12"><div class="d-label">Password *</div><input class="d-input" type="password" value="password123"></div>
+            <div class="mb12"><div class="d-label">Password last changed</div><input class="d-input readonly" readonly value="1/24/2025"></div>
+            <div class="mb12"><div class="d-label">Password expiration period</div>
+              <div style="display:flex;align-items:center;gap:8px"><input class="d-input" value="0" style="width:80px"> <span style="font-size:13px;color:#6b7280">Days</span></div>
+            </div>
+            <div class="mb12" style="display:flex;align-items:center;gap:8px;font-size:13px">Force password expiration <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">Force pin reset <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          </div>
+        </div>
+      </div>
+      <div id="vpDiscipline" style="display:none"><div style="color:#6b7280;font-size:13px;padding:16px 0">No discipline records.</div></div>
+      <div id="vpShift" style="display:none"><div style="color:#6b7280;font-size:13px;padding:16px 0">No shift records.</div></div>
+      <div id="vpZone" style="display:none"><div style="color:#6b7280;font-size:13px;padding:16px 0">No zone records.</div></div>
+      <div id="vpWage" style="display:none"><div style="color:#6b7280;font-size:13px;padding:16px 0">No wage records.</div></div>
+      <div id="vpCoverage" style="display:none"><div style="color:#6b7280;font-size:13px;padding:16px 0">No coverage area records.</div></div>
+      <div id="vpAvailability" style="display:none"><div style="color:#6b7280;font-size:13px;padding:16px 0">No availability records.</div></div>
+    </div>
+
+    <!-- SENIOR USER MANAGEMENT -->
+    <div id="uSeniorMgmt" style="display:none">
+
+      <!-- Basic Information collapsible -->
+      <div style="border:0.5px solid #e5e7eb;border-radius:7px;overflow:hidden;margin-bottom:14px">
+        <div onclick="toggleCollapse('suBasicBody','suBasicChevron')" style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:#f9fafb;cursor:pointer;user-select:none">
+          <span id="suBasicChevron" style="font-size:12px;color:#6b7280;transition:transform .2s;display:inline-block;transform:rotate(0deg)">▼</span>
+          <span style="font-size:13px;font-weight:600;color:#374151">Basic Information</span>
+        </div>
+        <div id="suBasicBody" style="padding:16px">
+          <div class="form-grid-3 mb12">
+            <div><div class="d-label">Code</div><input class="d-input" value="y1014402"></div>
+            <div><div class="d-label">User Name</div><input class="d-input" value="josmith@welltower.com"></div>
+            <div><div class="d-label">Initials *</div><input class="d-input" value="JS18"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+            <div><div class="d-label">First Name</div><input class="d-input" value="Josh"></div>
+            <div><div class="d-label">Middle Name</div><input class="d-input" placeholder="Middle Name"></div>
+            <div><div class="d-label">Last Name</div><input class="d-input" value="Smith"></div>
+            <div><div class="d-label">EHR Title</div><select class="d-select"><option>Select...</option><option>MD</option><option>RN</option><option>NP</option></select></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+            <div><div class="d-label">Email</div><input class="d-input" value="15444@yardi.scrub"></div>
+            <div>
+              <div class="d-label">Phone Number</div>
+              <div style="display:flex;align-items:center;gap:4px;border:0.5px solid #d1d5db;border-radius:5px;padding:0 8px;background:#fff">
+                <span style="font-size:13px">🇺🇸</span>
+                <input style="border:none;outline:none;font-size:13px;padding:7px 4px;width:100%;background:transparent;color:#111" value="(201) 555-0123">
+              </div>
+            </div>
+            <div><div class="d-label">EHR Certification</div><select class="d-select"><option>Select...</option></select></div>
+            <div><div class="d-label">Message Carrier</div><select class="d-select"><option>Message Carrier</option></select></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px;align-items:end">
+            <div><div class="d-label">Time Zone</div><select class="d-select"><option>Time Zone</option><option>Eastern</option><option>Central</option><option>Mountain</option><option>Pacific</option></select></div>
+            <div><div class="d-label">PIN *</div><input class="d-input" type="password" value="1234"></div>
+            <div>
+              <div class="d-label" style="margin-bottom:6px">Force pin reset</div>
+              <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+            </div>
+            <div>
+              <div class="d-label" style="margin-bottom:6px">Secure Docs</div>
+              <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <div>
+              <div class="d-label">Group *</div>
+              <div style="border:0.5px solid #d1d5db;border-radius:5px;padding:5px 8px;background:#fff;display:flex;align-items:center;gap:6px">
+                <span class="tag-chip">SHO Executive Director-Clinical (SHO ... <button>×</button></span>
+              </div>
+            </div>
+            <div>
+              <div class="d-label">Community</div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <select class="d-select" style="flex:1"><option>Select Community</option></select>
+                <button class="btn-more" style="padding:5px 8px;font-size:14px">⋮</button>
+              </div>
+            </div>
+          </div>
+          <div class="mb12"><div class="d-label">Operator</div><select class="d-select"><option></option></select></div>
+          <div><div class="d-label">Notes</div><textarea class="d-textarea" style="min-height:80px"></textarea></div>
+        </div>
+      </div>
+
+      <!-- CRM Setup collapsible -->
+      <div style="border:0.5px solid #e5e7eb;border-radius:7px;overflow:hidden">
+        <div onclick="toggleCollapse('suCRMBody','suCRMChevron')" style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:#f9fafb;cursor:pointer;user-select:none">
+          <span id="suCRMChevron" style="font-size:12px;color:#6b7280;transition:transform .2s;display:inline-block;transform:rotate(0deg)">▼</span>
+          <span style="font-size:13px;font-weight:600;color:#374151">CRM Setup</span>
+        </div>
+        <div id="suCRMBody" style="padding:16px">
+          <div class="sub-tabs" style="margin-bottom:14px">
+            <div class="stab active" onclick="showCRMTab('suRolesPane',this)">Roles</div>
+            <div class="stab" onclick="showCRMTab('suSalesCounselorPane',this)">Sales Counselor</div>
+          </div>
+          <!-- Roles pane -->
+          <div id="suRolesPane">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span class="count-badge">0</span>
+                <span style="font-size:13px;color:#374151">items selected</span>
+              </div>
+              <input class="dual-s" style="width:180px" placeholder="Search...">
+            </div>
+            <table class="d-table">
+              <thead><tr>
+                <th style="width:32px"><input type="checkbox" class="cb" onchange="toggleAllCRMRoles(this)"></th>
+                <th>Role <span class="sort-icon">⇅</span></th>
+              </tr></thead>
+              <tbody id="crmRolesTbody">
+                <tr><td><input type="checkbox" class="cb crm-role-cb" onchange="updateCRMCount()"></td><td>CRM Activity Role - Executive Director</td></tr>
+                <tr><td><input type="checkbox" class="cb crm-role-cb" onchange="updateCRMCount()"></td><td>Incentive Approver - Incentive Approver</td></tr>
+                <tr><td><input type="checkbox" class="cb crm-role-cb" onchange="updateCRMCount()"></td><td>Proposal Approver - Corporate</td></tr>
+                <tr><td><input type="checkbox" class="cb crm-role-cb" onchange="updateCRMCount()"></td><td>Proposal Approver - Executive Director</td></tr>
+                <tr><td><input type="checkbox" class="cb crm-role-cb" onchange="updateCRMCount()"></td><td>Proposal Approver - Regional Vice President</td></tr>
+                <tr><td><input type="checkbox" class="cb crm-role-cb" onchange="updateCRMCount()"></td><td>Proposal Approver - Sales Director</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Sales Counselor pane -->
+          <div id="suSalesCounselorPane" style="display:none">
+            <div style="border:0.5px solid #e5e7eb;border-radius:6px;padding:16px;background:#fff">
+              <div style="display:flex;align-items:center;gap:24px">
+                <div>
+                  <div class="d-label" style="margin-bottom:6px">Is Sales Counselor</div>
+                  <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+                </div>
+                <div>
+                  <div class="d-label">Inactive Date</div>
+                  <div style="display:flex;align-items:center;gap:4px">
+                    <input class="d-input" style="width:160px" placeholder="" type="date">
+                    <button style="border:0.5px solid #d1d5db;border-radius:5px;padding:6px 8px;background:#fff;cursor:pointer;font-size:14px;color:#6b7280">📅</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="drawer-footer">
+    <button class="btn-cancel" onclick="closeUserDrawer()">Cancel</button>
+    <button class="btn-save">Save</button>
+  </div>
+</div>
+
+<script>
+const shieldSvg=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M12 2l7 4v6c0 5-3.5 9-7 10C8.5 21 5 17 5 12V6l7-4z"/></svg>`;
+const userSvg=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
+const keySvg=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><circle cx="8" cy="15" r="5"/><path d="M21 3l-9.4 9.4M16 8l3 3"/></svg>`;
+
+const groups=[
+  ['12345','Anand Group','6','746','10','210','4','120','1','3'],
+  ['123456','jagdish test','0','756','0','214','0','121','0','0'],
+  ['188756','','1','756','0','111','103','1','120','0'],
+  ['266300','266300','2','756','0','214','0','121','0','0'],
+  ['aca','ACA group','0','756','0','214','0','121','0','0'],
+  ['acct2','Accounting 2','4','756','0','214','0','121','0','0'],
+  ['acctg','Accounting','7','756','0','214','0','121','0','0'],
+  ['acmpi','CMPI limited access','5','752','4','214','0','119','2','0'],
+  ['actus','for maintenance plugin 8 testing','13','756','0','214','0','121','0','0'],
+  ['adminca','','10','756','0','214','0','121','0','0'],
+  ['adminutl','Admin Utilities user group','5','756','0','214','0','121','0','0'],
+];
+const users=[
+  ['jsmith','John Smith','jsmith@yardi.com','3','Active','04/15/2026'],
+  ['mjones','Mary Jones','mjones@yardi.com','2','Active','04/16/2026'],
+  ['bwilson','Bob Wilson','bwilson@yardi.com','1','Inactive','01/10/2026'],
+  ['agarcia','Ana Garcia','agarcia@yardi.com','4','Active','04/17/2026'],
+  ['tchang','Tony Chang','tchang@yardi.com','2','Active','04/14/2026'],
+  ['kpatel','Kiran Patel','kpatel@yardi.com','1','Active','04/12/2026'],
+  ['lmartin','Lisa Martin','lmartin@yardi.com','5','Active','04/17/2026'],
+  ['dlee','David Lee','dlee@yardi.com','2','Locked','03/28/2026'],
+  ['rflores','Rosa Flores','rflores@yardi.com','3','Active','04/16/2026'],
+  ['mnguyen','Mike Nguyen','mnguyen@yardi.com','1','Active','04/15/2026'],
+];
+const roles=[
+  ['ADMIN','Administrator','Full system access','5','342'],
+  ['SITEMGR','Site Manager','Property-level management','12','186'],
+  ['ACCTMGR','Accounting Manager','Financial operations','8','124'],
+  ['VIEWER','Read Only','View-only access','22','45'],
+  ['MAINT','Maintenance','Work order management','6','78'],
+  ['LEASING','Leasing Agent','Leasing and prospect management','9','92'],
+  ['REPORTS','Report User','Report generation access','15','56'],
+  ['APRVR','Approver','Approval workflows','4','38'],
+];
+const reports=[
+  ['Rent Roll Summary','Voyager 8 Residential','SQL','46'],
+  ['Aged Receivables Detail','Voyager 8 Residential','SQL','41'],
+  ['GL Trial Balance','Voyager 8 Residential','YSR','35'],
+  ['Budget Variance Report','Voyager 8 Residential','SQL','23'],
+  ['Vacancy Loss Detail','Voyager 8 Commercial','YSR','16'],
+  ['Move-In/Move-Out Report','Voyager 8 Residential','SQL','16'],
+  ['Cash Receipts Journal','AR Manager JS','YSR','10'],
+  ['Vendor Aging Summary','AR Manager - Payments Admin','SQL','8'],
+  ['Work Order Status','facilitiesmanager','YSR','7'],
+  ['Lease Expiration Schedule','Voyager 8 Residential','SQL','6'],
+  ['Security Deposit Ledger','Voyager 8 Residential','YSR','5'],
+  ['Bank Reconciliation','Voyager 8 Residential','SQL','4'],
+  ['Tenant Balance Detail','AR Manager - Payments Admin','YSR','3'],
+  ['Occupancy Summary','Voyager 8 Residential','SQL','2'],
+  ['Income Statement','Voyager 8 Residential','YSR','1'],
+];
+
+function statusPill(s){
+  if(s==='Active')return`<span class="status-pill status-active">Active</span>`;
+  if(s==='Inactive')return`<span class="status-pill status-inactive">Inactive</span>`;
+  if(s==='Locked')return`<span class="status-pill status-locked">Locked</span>`;
+  return s;
+}
+function initials(name){return name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();}
+
+function buildGroups(){
+  document.getElementById('groups-tbody').innerHTML=groups.map(g=>`
+    <tr onclick="openGroupDrawer('${g[0]}','${g[1]}')">
+      <td onclick="event.stopPropagation()"><input type="checkbox" class="cb"></td>
+      <td><div class="td-link">${shieldSvg}${g[0]}</div></td>
+      <td>${g[1]}</td><td>${g[2]} user(s)</td>
+      <td><div class="access-lines">Access: ${g[3]}<br><span class="no-access">No Access: ${g[4]}</span></div></td>
+      <td><div class="access-lines">Access: ${g[5]}<br><span class="no-access">No Access: ${g[6]}</span></div></td>
+      <td><div class="access-lines">Access: ${g[7]}<br><span class="no-access">No Access: ${g[8]}</span></div></td>
+      <td>${g[9]} book(s)</td>
+    </tr>`).join('');
+}
+function buildUsers(){
+  document.getElementById('users-tbody').innerHTML=users.map(u=>`
+    <tr onclick="openUserDrawer('${u[1]}','${u[2]}')">
+      <td onclick="event.stopPropagation()"><input type="checkbox" class="cb"></td>
+      <td><div class="td-link">${userSvg}${u[0]}</div></td>
+      <td>${u[1]}</td><td>${u[2]}</td><td>${u[3]}</td>
+      <td>${statusPill(u[4])}</td><td>${u[5]}</td>
+    </tr>`).join('');
+}
+function buildRoles(){
+  document.getElementById('roles-tbody').innerHTML=roles.map(r=>`
+    <tr><td><input type="checkbox" class="cb"></td>
+      <td><div class="td-link">${keySvg}${r[0]}</div></td>
+      <td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td>
+    </tr>`).join('');
+}
+function buildReports(){
+  document.getElementById('reports-tbody').innerHTML=reports.map(r=>`
+    <tr><td><input type="checkbox" class="cb"></td>
+      <td>${r[0]}</td><td>${r[1]}</td>
+      <td><span class="report-type ${r[2]==='SQL'?'type-sql':'type-ysr'}">${r[2]}</span></td>
+      <td style="text-align:right"><span class="roles-badge">${r[3]}</span></td>
+    </tr>`).join('');
+}
+
+function showTab(name,el){
+  ['groups','users','roles','reports'].forEach(t=>document.getElementById('tab-'+t).style.display=t===name?'block':'none');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+function filterTable(tbodyId,val,cols){
+  const q=val.toLowerCase();
+  document.querySelectorAll('#'+tbodyId+' tr').forEach(row=>{
+    const cells=row.querySelectorAll('td');
+    const match=cols.some(i=>cells[i]&&cells[i].textContent.toLowerCase().includes(q));
+    row.style.display=(!q||match)?'':'none';
+  });
+}
+
+// Group drawer
+const G_TABS=['gSecurity','gUsers','gPermissions','gAccounts','gAcctTrees','gChargeCodes','gDisplayTypes','gExpenseType','gBooks','gVoyager7s'];
+function openGroupDrawer(code,name){
+  document.getElementById('gCode').textContent=code;
+  document.getElementById('gName').textContent=name||code;
+  document.getElementById('groupOverlay').classList.add('open');
+  document.getElementById('groupDrawer').classList.add('open');
+  G_TABS.forEach((t,i)=>document.getElementById(t).style.display=i===0?'block':'none');
+  document.querySelectorAll('#groupDrawer .dtab').forEach((t,i)=>{t.classList.toggle('active',i===0);});
+}
+function closeGroupDrawer(){
+  document.getElementById('groupOverlay').classList.remove('open');
+  document.getElementById('groupDrawer').classList.remove('open');
+}
+
+// User drawer
+const U_TABS=['uRoles','uDetails','uSettings','uProgramRights','uRegional','uPageAccess','uElementAccess','uVoyagerAccess','uVoyagerPlus','uSeniorMgmt'];
+function openUserDrawer(name,email){
+  document.getElementById('uName').textContent=name;
+  document.getElementById('uEmail').textContent=email;
+  document.getElementById('uAvatar').textContent=initials(name);
+  document.getElementById('userOverlay').classList.add('open');
+  document.getElementById('userDrawer').classList.add('open');
+  U_TABS.forEach((t,i)=>document.getElementById(t).style.display=i===0?'block':'none');
+  document.querySelectorAll('#userDrawer .dtab').forEach((t,i)=>{t.classList.toggle('active',i===0);});
+}
+function closeUserDrawer(){
+  document.getElementById('userOverlay').classList.remove('open');
+  document.getElementById('userDrawer').classList.remove('open');
+}
+
+function showDTab(name,el,prefix){
+  const tabs=prefix==='g'?G_TABS:U_TABS;
+  tabs.forEach(t=>document.getElementById(t).style.display=t===name?'block':'none');
+  const drawer=document.getElementById(prefix==='g'?'groupDrawer':'userDrawer');
+  drawer.querySelectorAll('.dtab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function showSubTab(id,el,parentId){
+  const parent=document.getElementById(parentId);
+  parent.querySelectorAll('[id^="'+parentId.replace('u','u')+'"]').forEach(()=>{});
+  // find sibling sub-content divs
+  const atabs=el.closest('.access-subtabs');
+  const allIds=Array.from(atabs.querySelectorAll('.atab')).map((_,i)=>i===0?parentId+'Access':parentId+'NoAccess');
+  allIds.forEach(sid=>{const el2=document.getElementById(sid);if(el2)el2.style.display='none';});
+  document.getElementById(id).style.display='block';
+  atabs.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function showVPTab(id,el){
+  ['vpLoginSetup','vpDiscipline','vpShift','vpZone','vpWage','vpCoverage','vpAvailability'].forEach(t=>document.getElementById(t).style.display=t===id?'block':'none');
+  el.closest('.sub-tabs').querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleCollapse(bodyId,chevId){
+  const body=document.getElementById(bodyId);
+  const chev=document.getElementById(chevId);
+  const collapsed=body.style.display==='none';
+  body.style.display=collapsed?'block':'none';
+  chev.style.transform=collapsed?'rotate(0deg)':'rotate(-90deg)';
+}
+function showCRMTab(id,el){
+  ['suRolesPane','suSalesCounselorPane'].forEach(t=>document.getElementById(t).style.display=t===id?'block':'none');
+  el.closest('.sub-tabs').querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+function updateCRMCount(){
+  const checked=document.querySelectorAll('.crm-role-cb:checked').length;
+  document.querySelector('#suRolesPane .count-badge').textContent=checked;
+}
+function toggleAllCRMRoles(cb){
+  document.querySelectorAll('.crm-role-cb').forEach(c=>c.checked=cb.checked);
+  updateCRMCount();
+}
+function toggleUserMenu(e){
+  e.stopPropagation();
+  const m=document.getElementById('userContextMenu');
+  m.style.display=m.style.display==='none'?'block':'none';
+}
+document.addEventListener('click',()=>{
+  const m=document.getElementById('userContextMenu');
+  if(m) m.style.display='none';
+});
+buildGroups();buildUsers();buildRoles();buildReports();
+</script>
+</body>
+</html>
